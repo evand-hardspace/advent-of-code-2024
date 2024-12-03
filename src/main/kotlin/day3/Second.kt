@@ -5,58 +5,50 @@ import kotlin.io.path.readText
 
 fun main() {
     val input = Path("input/input_day3.txt").readText()
-    val tokens = input.tokenize()
-
-    val actions = mutableListOf<ActionRepresentation>()
-
-    var i = 0
-    while (i < tokens.size) {
-        when {
-            tokens[i] is Token.Mul
-                    && tokens.getOrNull(i + 1) is Token.LeftBrace
-                    && tokens.getOrNull(i + 2) is Token.Number
-                    && tokens.getOrNull(i + 3) is Token.Coma
-                    && tokens.getOrNull(i + 4) is Token.Number
-                    && tokens.getOrNull(i + 5) is Token.RightBrace -> {
-                val result =
-                    (tokens[i + 2].let { it as Token.Number }.value * tokens[i + 4].let { it as Token.Number }.value)
-                actions += ActionRepresentation.Value(result)
-                i += 5
-            }
-
-            tokens[i] == Token.Do -> actions += ActionRepresentation.Do
-            tokens[i] == Token.Dont -> actions += ActionRepresentation.Dont
-
-        }
-        i++
-    }
+    val tokens = input.tokenize().calculateAndReduce()
 
     var result = 0
     var skipCalculation = false
-
-    i = -1
-    while (i < actions.size - 1) {
+    var i = -1
+    while (i < tokens.size - 1) {
         i++
-        if (actions[i] == ActionRepresentation.Dont) {
+        if (tokens[i] == Token.Dont) {
             skipCalculation = true
             continue
         }
-        if (actions[i] == ActionRepresentation.Do) {
+        if (tokens[i] == Token.Do) {
             skipCalculation = false
             continue
         }
 
-        if (skipCalculation.not() && actions[i] is ActionRepresentation.Value) {
-            result += actions[i].let { it as ActionRepresentation.Value }.value
+        if (skipCalculation.not() && tokens[i] is Token.Number) {
+            result += tokens[i].let { it as Token.Number }.value
         }
     }
 
     println(result)
 }
 
+private fun List<Token>.calculateAndReduce(): List<Token> {
+    val tokens = mutableListOf<Token>()
 
-private sealed interface ActionRepresentation {
-    data class Value(val value: Int) : ActionRepresentation
-    data object Do : ActionRepresentation
-    data object Dont : ActionRepresentation
+    var i = 0
+    while (i < size) {
+        when {
+            this[i] == Token.Do -> tokens += Token.Do
+            this[i] == Token.Dont -> tokens += Token.Dont
+            this[i] is Token.Mul
+                    && getOrNull(i + 1) is Token.LeftBrace
+                    && getOrNull(i + 2) is Token.Number
+                    && getOrNull(i + 3) is Token.Coma
+                    && getOrNull(i + 4) is Token.Number
+                    && getOrNull(i + 5) is Token.RightBrace -> {
+                val result = (this[i + 2] as Token.Number).value * (this[i + 4] as Token.Number).value
+                tokens += Token.Number(result)
+                i += 5
+            }
+        }
+        i++
+    }
+    return tokens
 }

@@ -29,98 +29,62 @@ fun main() {
 }
 
 fun String.tokenize(): List<Token> {
-    var currentIndex = 0
+    var i = 0
 
     val result = mutableListOf<Token>()
-    while (currentIndex < length) {
-        when (this[currentIndex]) {
+    while (i < length) {
+        when (this[i]) {
+            '(' -> result += Token.LeftBrace
+            ')' -> result += Token.RightBrace
+            ',' -> result += Token.Coma
             'm' -> {
                 if (
-                    getOrNull(currentIndex + 1) == 'u'
-                    && getOrNull(currentIndex + 2) == 'l'
+                    getOrNull(i + 1) == 'u'
+                    && getOrNull(i + 2) == 'l'
                 ) {
                     result += Token.Mul
-                    currentIndex += 2
+                    i += 2
                 }
             }
 
-            '(' -> {
-                result += Token.LeftBrace
-            }
-
-            ')' -> {
-                result += Token.RightBrace
-            }
-
-            ',' -> {
-                result += Token.Coma
-            }
-
             in '0'..'9' -> {
-                var number = this[currentIndex].toString()
-                while (this.getOrNull(currentIndex + 1) in '0'..'9') {
-                    number += this[currentIndex + 1]
-                    currentIndex++
+                var number = this[i].toString()
+                while (this.getOrNull(i + 1) in '0'..'9') {
+                    number += this[i + 1]
+                    i++
                 }
                 result += Token.Number(number.toInt())
             }
 
             'd' -> {
                 when {
-                    getOrNull(currentIndex + 1) == 'o'
-                            && getOrNull(currentIndex + 2) == 'n'
-                            && getOrNull(currentIndex + 3) == '\''
-                            && getOrNull(currentIndex + 4) == 't'
-                            && getOrNull(currentIndex + 5) == '('
-                            && getOrNull(currentIndex + 6) == ')' -> {
+                    getOrNull(i + 1) == 'o'
+                            && getOrNull(i + 2) == 'n'
+                            && getOrNull(i + 3) == '\''
+                            && getOrNull(i + 4) == 't'
+                            && getOrNull(i + 5) == '('
+                            && getOrNull(i + 6) == ')' -> {
                         result += Token.Dont
-                        currentIndex += 5
+                        i += 5
                     }
 
-                    getOrNull(currentIndex + 1) == 'o'
-                            && getOrNull(currentIndex + 2) == '('
-                            && getOrNull(currentIndex + 3) == ')' -> {
+                    getOrNull(i + 1) == 'o'
+                            && getOrNull(i + 2) == '('
+                            && getOrNull(i + 3) == ')' -> {
                         result += Token.Do
-                        currentIndex += 3
+                        i += 3
                     }
 
-                    else -> {
-                        result += Token.Other
-                    }
+                    else -> result += Token.Other
+
                 }
             }
 
-            else -> {
-                result += Token.Other
-            }
-        }
-        currentIndex++
-    }
-    return result
-}
-
-private fun String.checkToken(
-    index: Int,
-    lexeme: String,
-    indexUpdate: () -> Unit,
-    expectedToken: Token,
-    onAddToken: (Token) -> Unit,
-) {
-    var isValid = true
-    var i = 0
-    for(s in lexeme) {
-        if(getOrNull(index + i) != s) {
-            isValid = false
-            break
+            else -> result += Token.Other
         }
         i++
     }
-    if(isValid) {
-        repeat(lexeme.length) { indexUpdate() }
-        onAddToken(expectedToken)
-    } else {
-        onAddToken(Token.Other)
-    }
+    return result
 }
 
 sealed interface Token {
