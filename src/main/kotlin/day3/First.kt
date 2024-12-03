@@ -44,9 +44,18 @@ fun String.tokenize(): List<Token> {
                 }
             }
 
-            '(' -> result += Token.LeftBrace
-            ')' -> result += Token.RightBrace
-            ',' -> result += Token.Coma
+            '(' -> {
+                result += Token.LeftBrace
+            }
+
+            ')' -> {
+                result += Token.RightBrace
+            }
+
+            ',' -> {
+                result += Token.Coma
+            }
+
             in '0'..'9' -> {
                 var number = this[currentIndex].toString()
                 while (this.getOrNull(currentIndex + 1) in '0'..'9') {
@@ -56,11 +65,62 @@ fun String.tokenize(): List<Token> {
                 result += Token.Number(number.toInt())
             }
 
-            else -> result += Token.Other
+            'd' -> {
+                when {
+                    getOrNull(currentIndex + 1) == 'o'
+                            && getOrNull(currentIndex + 2) == 'n'
+                            && getOrNull(currentIndex + 3) == '\''
+                            && getOrNull(currentIndex + 4) == 't'
+                            && getOrNull(currentIndex + 5) == '('
+                            && getOrNull(currentIndex + 6) == ')' -> {
+                        result += Token.Dont
+                        currentIndex += 5
+                    }
+
+                    getOrNull(currentIndex + 1) == 'o'
+                            && getOrNull(currentIndex + 2) == '('
+                            && getOrNull(currentIndex + 3) == ')' -> {
+                        result += Token.Do
+                        currentIndex += 3
+                    }
+
+                    else -> {
+                        result += Token.Other
+                    }
+                }
+            }
+
+            else -> {
+                result += Token.Other
+            }
         }
         currentIndex++
     }
     return result
+}
+
+private fun String.checkToken(
+    index: Int,
+    lexeme: String,
+    indexUpdate: () -> Unit,
+    expectedToken: Token,
+    onAddToken: (Token) -> Unit,
+) {
+    var isValid = true
+    var i = 0
+    for(s in lexeme) {
+        if(getOrNull(index + i) != s) {
+            isValid = false
+            break
+        }
+        i++
+    }
+    if(isValid) {
+        repeat(lexeme.length) { indexUpdate() }
+        onAddToken(expectedToken)
+    } else {
+        onAddToken(Token.Other)
+    }
 }
 
 sealed interface Token {
@@ -70,4 +130,6 @@ sealed interface Token {
     data object RightBrace : Token
     data object Coma : Token
     data object Other : Token
+    data object Do : Token
+    data object Dont : Token
 }
