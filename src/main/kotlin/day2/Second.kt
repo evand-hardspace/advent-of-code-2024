@@ -5,25 +5,22 @@ import kotlin.io.path.readLines
 import kotlin.math.absoluteValue
 
 fun main() {
-    val input = Path("input/input_day2.txt").readLines()
-
-    fun isSafe(nums: List<Int>): Boolean {
-        val isIncreasing = nums.zipWithNext().all { (a, b) -> b > a }
-        val isDecreasing = nums.zipWithNext().all { (a, b) -> b < a }
-        val validDifferences = nums.zipWithNext().all { (a, b) -> (b - a).absoluteValue in 1..3 }
-
-        return (isIncreasing || isDecreasing) && validDifferences
+    val isSafe: List<Int>.() -> Boolean = {
+        val isIncreasing = zipWithNext().all { (a, b) -> b > a }
+        val isDecreasing = zipWithNext().all { (a, b) -> b < a }
+        val validDifferences = zipWithNext().all { (a, b) -> (b - a).absoluteValue in 1..3 }
+        (isIncreasing || isDecreasing) && validDifferences
     }
 
-    input.map { line ->
+    Path("input/input_day2.txt").readLines().map { line ->
         val nums = line.split(' ').map { it.toInt() }
-        if (isSafe(nums)) return@map true
+        if (nums.isSafe()) return@map true
 
         for (i in nums.indices) {
-            val candidate = nums.toMutableList().apply { removeAt(i) }
-            if (isSafe(candidate)) return@map true
-
+            if (nums.toMutableList().apply { removeAt(i) }.isSafe())
+                return@map true
         }
+
         return@map false
     }
         .count { it }
