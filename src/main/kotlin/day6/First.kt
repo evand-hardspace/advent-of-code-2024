@@ -79,6 +79,6 @@ private fun Pair<Int, Int>.isNotOnMapBorders(field: List<List<Char>>): Boolean {
     return first in 1..<field.size - 1 && second in 1..<field[0].size - 1
 }
 
-private enum class Direction {
+enum class Direction {
     UP, DOWN, LEFT, RIGHT
 }
